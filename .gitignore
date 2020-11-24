@@ -1,0 +1,123 @@
+# Python
+## Byte-compiled / optimized
+*.py[cod]
+
+## C extensions
+*.so
+
+## Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+/venv
+*.mo
+*.pot
+
+## Asset Build
+asset_build/
+asset_build_webpack/
+static/
+manifest.json
+webpack-stats.json
+
+## Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+## Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+/reports/
+test_results/
+
+# Pytest and plugins
+.pytest_cache
+.testmondata
+prof/
+
+## Translations
+*.mo
+*.pot
+
+## Django stuff:
+logs/
+*.log
+cert.key
+cert.crt
+dev_cert.key
+dev_cert.crt
+e3_server/dev_cert.*
+
+## Sphinx documentation
+docs/_build/
+
+# Ansible
+provisioning/vpass*
+provisioning/roles/external
+*.retry
+
+# PyCharm
+.idea/
+
+# Vagrant
+.vagrant/
+
+# Vim
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+.ropeproject/
+
+# Bower
+bower_components
+
+# npm
+node_modules
+
+# Secrets
+local_settings.py
+secret_settings.py
+keys/
+
+# Mac Files
+.DS_Store
+
+# tmux
+.tmuxinator.yml
+
+# aws
+*.pem
+
+# Emacs
+flycheck*.py
+.dir-locals.el
+
+.elasticbeanstalk
+
+# eslint
+.eslintcache
+
+# vscode
+.python-version
+.vscode/
