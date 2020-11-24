@@ -1,0 +1,653 @@
+# yamllint disable
+
+openapi: '3.0.2'
+info:
+  title: 'Spring PACE Product Client Software Server'
+  version: '1.0.0'
+  description: >-
+    This section describes the API calls and their usage to interact with the
+    Spring Network.
+  contact:
+    email: 'support@springlabs.com'
+    name: 'Spring Labs'
+    url: 'https://springlabs.com'
+  termsOfService: 'https://springlabs.com/terms/'
+tags:
+  - description: 'Attestor Actions'
+    name: 'attestationGroups'
+  - description: 'Health Check Actions'
+    name: 'health'
+  - description: 'Requestor Actions'
+    name: 'inquiries'
+  - description: 'Non-versioned operations at root path'
+    name: 'root'
+components:
+  responses:
+    BadRequest:
+      description: 'Invalid input data error response.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: 'Unauthorized error response.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: 'Not found error response.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    APN:
+      $ref: '#/components/schemas/FieldString'
+      description: 'Assessor''s Parcel Number.'
+      example: '001-010-01'
+    Address:
+      description: 'A group of fields representing an address.'
+      properties:
+        addressCity:
+          $ref: '#/components/schemas/FieldString'
+          description: 'City of Address'
+          example: 'Marina Del Rey'
+        addressLine1:
+          $ref: '#/components/schemas/FieldString'
+          description: 'Line 1 of Address'
+          example: '4511 Glencoe Avenue'
+        addressLine2:
+          $ref: '#/components/schemas/FieldString'
+          description: 'Line 2 of Address'
+          example: 'Suite #100'
+        addressState:
+          $ref: '#/components/schemas/FieldString'
+          description: 'State of Address'
+          example: 'CA'
+        addressZip:
+          $ref: '#/components/schemas/FieldString'
+          description: 'ZIP Code of Address'
+          example: '90292'
+      required:
+        - addressCity
+        - addressLine1
+        - addressState
+        - addressZip
+      type: 'object'
+    ApplicationId:
+      maxLength: 255
+      minLength: 0
+      type: 'string'
+      pattern: '\S+'
+      example: '71677b6e-139b-462d-b46f-bf6a33706e37'
+    ApplicationTypeEnum:
+      enum:
+        - APPLICATION
+        - ASSESSMENT
+      type: 'string'
+    AttestationGroupDigest:
+      description: >-
+        Information returned after update/creation of a lien
+        transaction (attestation group).
+      properties:
+        error:
+          $ref: '#/components/schemas/AttestationGroupError'
+        normalization:
+          $ref: '#/components/schemas/NormalizationInfo'
+      required:
+        - normalization
+      type: 'object'
+    AttestationGroupError:
+      description: >-
+        Error information returned for each failed attestation group upsert.
+      properties:
+        code:
+          $ref: '#/components/schemas/FieldInteger'
+        message:
+          $ref: '#/components/schemas/ErrorString'
+      required:
+        - code
+        - message
+      type: 'object'
+    AttestationGroupInput:
+      description: >-
+        A data structure used to represent the information gathered in a lien
+        transaction (attestation group). Passed in when creating or updating.
+      properties:
+        lienStatusData:
+          $ref: '#/components/schemas/LienStatusData'
+        subject:
+          $ref: '#/components/schemas/Subject'
+      required:
+        - lienStatusData
+        - subject
+      type: 'object'
+    AttestationGroupRecord:
+      description: >-
+        A data structure to represent an information about lien transaction
+        (attestation group) you previously created.
+      properties:
+        id:
+          $ref: '#/components/schemas/ApplicationId'
+          description: 'The user supplied Unique ID.'
+          example: 'PACE-a51a-43fb-81b0-c2a17540a4fd'
+        revoked:
+          type: 'boolean'
+          description: 'Identify whether the entire AttestationGroup was revoked.'
+          example: 'true'
+      required:
+        - id
+        - revoked
+      type: 'object'
+    AttestationGroupsBulkRequest:
+      description: 'An object containing a list of attestation groups to update/create.'
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/AttestationGroupsRequestItem'
+          maxItems: 100
+          minItems: 1
+          type: 'array'
+      required:
+        - items
+      type: 'object'
+    AttestationGroupsBulkResponse:
+      description: 'An object containing a list of results corresponding to the list of inputs in the request.'
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/AttestationGroupDigest'
+          maxItems: 100
+          minItems: 1
+          type: 'array'
+      required:
+        - items
+      type: 'object'
+    AttestationGroupsRequestItem:
+      description: ''
+      properties:
+        id:
+          $ref: '#/components/schemas/ApplicationId'
+          description: >-
+            The participant-supplied unique ID for this
+            attestation group.
+        resource:
+          $ref: '#/components/schemas/AttestationGroupInput'
+          description: >-
+            An attestation group to include in the bulk create
+            operation.
+      required:
+        - id
+        - resource
+      type: 'object'
+    AttestationGroupsRevokeRequest:
+      description: 'Input required when revoking an attestation group.'
+      properties:
+        reason:
+          $ref: '#/components/schemas/RevocationReason'
+          description: >-
+            The reason why the attestation group is being revoked.
+      required:
+        - reason
+      type: 'object'
+    CurrencyString:
+      $ref: '#/components/schemas/FieldString'
+      maxLength: 15
+      minLength: 0
+      pattern: '^\s*\$?[0-9]+[0-9,]*(\.?[0-9]*)\s*$|^\s*$'
+      example: '$10000.00'
+    Error:
+      description: 'Error response'
+      properties:
+        code:
+          example: 4000
+          type: 'integer'
+        message:
+          $ref: '#/components/schemas/ErrorString'
+          example: 'Unauthorized'
+      required:
+        - code
+        - message
+      type: 'object'
+    ErrorString:
+      maxLength: 4096
+      minLength: 0
+      type: 'string'
+    FIPSCountyCode:
+      $ref: '#/components/schemas/FieldString'
+      example: '06037'
+    FieldInteger:
+      type: 'integer'
+    FieldString:
+      maxLength: 255
+      minLength: 0
+      type: 'string'
+    HealthResponse:
+      description: 'Response returned when checking health of Product Client Software'
+      properties:
+        gatewayStatus:
+          $ref: '#/components/schemas/FieldString'
+          example: 'Ok'
+        serviceName:
+          $ref: '#/components/schemas/FieldString'
+          example: 'pace'
+        serviceStatus:
+          $ref: '#/components/schemas/FieldString'
+          example: 'Fail'
+        smartystreetsStatus:
+          $ref: '#/components/schemas/FieldString'
+          example: 'N/A'
+      type: object
+    InquiriesRequest:
+      description: 'Input required when purchasing an inquiry.'
+      properties:
+        subject:
+          $ref: '#/components/schemas/Subject'
+      required:
+        - subject
+      type: 'object'
+    InquiriesResponse:
+      description: 'The results from purchasing an inquiry.'
+      properties:
+        id:
+          $ref: '#/components/schemas/ApplicationId'
+          description: 'Unique identifier for the purchased inquiry.'
+        normalization:
+          $ref: '#/components/schemas/NormalizationInfo'
+        results:
+          items:
+            $ref: '#/components/schemas/Report'
+          maxItems: 100
+          minItems: 0
+          type: 'array'
+          uniqueItems: true
+      required:
+        - id
+        - results
+      type: 'object'
+    ISO8601TimeString:
+      example: '2019-01-01T01:01:01+00:00'
+      maxLength: 32
+      minLength: 8
+      type: 'string'
+    LienStatusData:
+      description: 'Shows amount and timestamp for each lien status.'
+      properties:
+        canceled:
+          $ref: '#/components/schemas/StatusCanceled'
+          description: 'Data for the Canceled state.'
+        funded:
+          $ref: '#/components/schemas/StatusData'
+          description: 'Data for the Funded state.'
+        noticeToProceed:
+          $ref: '#/components/schemas/StatusData'
+          description: 'Data for the Notice to Proceed state.'
+        signedAssessmentContract:
+          $ref: '#/components/schemas/StatusData'
+          description: 'Data for the Signed Assessment Contract state.'
+      type: 'object'
+    LienStatusEnum:
+      enum:
+        - SIGNED_ASSESSMENT_CONTRACT
+        - NOTICE_TO_PROCEED
+        - FUNDED
+        - CANCELED
+      type: 'string'
+    NormalizationInfo:
+      description: 'Shows how input data was normalized'
+      properties:
+        method:
+          $ref: '#/components/schemas/NormalizationMethodEnum'
+          description: 'The method used to normalize the data'
+        address:
+          $ref: '#/components/schemas/Address'
+      required:
+        - method
+      type: 'object'
+    NormalizationMethodEnum:
+      enum:
+        - SMARTYSTREETS
+        - INTERNAL
+      type: 'string'
+      default: 'INTERNAL'
+    PageLimit:
+      example: 100
+      maximum: 100
+      minimum: 1
+      type: 'integer'
+    PageLinks:
+      description: 'Links for pageable responses'
+      properties:
+        next:
+          description: 'URI for the next page of data (if any)'
+          type: 'string'
+        prev:
+          description: 'URI for the previous page of data (if any)'
+          type: 'string'
+        self:
+          description: 'URI for this page of data.'
+          type: 'string'
+      required:
+        - self
+      type: 'object'
+    PageOffset:
+      example: 100
+      minimum: 0
+      type: 'integer'
+    Parcel:
+      properties:
+        apn:
+          $ref: '#/components/schemas/APN'
+          description: >-
+            Application Parcel Number is a unique number assigned to each parcel
+            of land by the county
+        fipsCountyCode:
+          $ref: '#/components/schemas/FIPSCountyCode'
+          description: >-
+            Federal Information Processing Standard is a 5 digit code which
+            uniquely identifies counties and states in the US
+      required:
+        - apn
+        - fipsCountyCode
+      type: 'object'
+    Report:
+      description: >-
+        A data structure used to represent information on one lien transaction
+        (attestation group). Received when purchasing an inquiry.
+      properties:
+        applicationType:
+          $ref: '#/components/schemas/ApplicationTypeEnum'
+          description: 'Lien transaction type - application or assessment (computed field).'
+          example: 'assessment'
+        bindingId:
+          $ref: '#/components/schemas/FieldString'
+          description: 'The ID associated with the attestation group on the Spring Network.'
+          example: '86fbb1ea-d2d4-4e00-b171-915e5a7f138b'
+        currentStatus:
+          $ref: '#/components/schemas/LienStatusEnum'
+          description: 'Shows the current state of the lien transaction (computed field).'
+        lienStatusData:
+          $ref: '#/components/schemas/LienStatusData'
+          description: 'Shows information on all the states of the application.'
+        ownAttestation:
+          description: 'Indicates whether this is the Participant''s attestation.'
+          example: true
+          type: 'boolean'
+        statusChangeTimestamp:
+          $ref: '#/components/schemas/ISO8601TimeString'
+          description: 'The timestamp of last status change in ISO-8601 (computed field)'
+      required:
+        - applicationType
+        - bindingId
+        - currentStatus
+        - lienStatusData
+        - ownAttestation
+        - statusChangeTimestamp
+      type: 'object'
+    RevocationReason:
+      enum:
+        - INACCURATE
+        - NO_LONGER_ACCURATE
+        - UNSPECIFIED
+      type: 'string'
+    StatusCanceled:
+      description: 'Shows if the lien is canceled.'
+      properties:
+        canceled:
+          type: 'boolean'
+          description: 'Describes if the lien was canceled.'
+        timestamp:
+          $ref: '#/components/schemas/ISO8601TimeString'
+          description: 'Timestamp of when this status was reached.'
+      required:
+        - canceled
+        - timestamp
+      type: 'object'
+    StatusData:
+      description: 'Shows the data pertaining to a status.'
+      properties:
+        amount:
+          $ref: '#/components/schemas/CurrencyString'
+          description: 'Amount granted.'
+        timestamp:
+          $ref: '#/components/schemas/ISO8601TimeString'
+          description: 'Timestamp of when this status was reached.'
+      required:
+        - amount
+        - timestamp
+      type: 'object'
+    Subject:
+      description: 'Inputs identifying the Subject (the property).'
+      properties:
+        address:
+          $ref: '#/components/schemas/Address'
+          description: 'The address of the property.'
+        parcel:
+          $ref: '#/components/schemas/Parcel'
+          description: 'The parcel data -- apn, fips -- of the property.'
+      type: 'object'
+  securitySchemes:
+    ApiKeyAuth:
+      in: 'header'
+      name: 'X-API-Key'
+      type: 'apiKey'
+      x-apikeyInfoFunc: 'pace.app.utils.auth.validate_api_key'
+paths:
+  /:
+    get:
+      summary: 'Root endpoint for the service.'
+      description: 'Endpoint for basic reachability check.'
+      tags:
+        - root
+      x-openapi-router-controller: 'pace.app.controllers.admin'
+      operationId: 'get_root'
+      responses:
+        '200':
+          description: 'Server is reachable.'
+  /healthz:
+    get:
+      summary: 'Health check endpoint'
+      description: 'Checks connectivity to Gateway Node and SmartyStreets API.'
+      tags:
+        - root
+      x-openapi-router-controller: 'pace.app.controllers.admin'
+      operationId: 'healthz'
+      responses:
+        '200':
+          description: 'Server health is OK.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: 'Server is not ready to handle requests. See response body for more details.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+                example:
+                  gatewayStatus: 'Fail'
+                  serviceStatus: 'Fail'
+                  serviceName: 'pace'
+                  smartystreetsStatus: 'OK'
+  /api/v1/admin/health:
+    get:
+      summary: 'Health check endpoint'
+      description: 'Checks connectivity to Gateway Node and SmartyStreets API.'
+      tags:
+        - health
+      x-openapi-router-controller: 'pace.app.controllers.admin'
+      operationId: 'get_health'
+      responses:
+        '200':
+          description: 'Server health is OK.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: 'Server is not ready to handle requests. See response body for more details.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+                example:
+                  gatewayStatus: 'Fail'
+                  serviceStatus: 'Fail'
+                  serviceName: 'pace'
+                  smartystreetsStatus: 'OK'
+  /api/v1/attestationGroups:
+    put:
+      summary: 'Update or create registry attestation groups in bulk'
+      description: >-
+        This endpoint allows Participants to update/create attestation
+        groups in bulk for publication to the network. Attestations are
+        updated/created for only the provided lien statuses.
+      tags:
+        - attestationGroups
+      x-openapi-router-controller: 'pace.app.controllers.upsert_attestation_groups'
+      operationId: 'upsert_attestation_groups'
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttestationGroupsBulkRequest'
+      responses:
+        '200':
+          description: >-
+            Successfully attempted update/creation. Success/failure is reported
+            per attestation group.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttestationGroupsBulkResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  '/api/v1/attestationGroups/{id}':
+    parameters:
+      - description: >-
+          Participant-provided unique ID of the attestation group to
+          update, create, or get.
+        in: 'path'
+        name: 'id'
+        required: true
+        schema:
+          $ref: '#/components/schemas/ApplicationId'
+          example: '71677b6e-139b-462d-b46f-bf6a33706e37'
+    get:
+      summary: 'Get information about a previously created attestation group by ID'
+      description: 'Information is retrieved from the Gateway Node database.'
+      tags:
+        - attestationGroups
+      x-openapi-router-controller: 'pace.app.controllers.get_attestation_groups'
+      operationId: 'get_attestation_group_by_id'
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: 'Attestation group info successfully fetched.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttestationGroupRecord'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      summary: 'Update or create an attestation group'
+      description: >-
+        This endpoint allows Participants to update/create an attestation
+        group for publication to the network. Attestations are updated/created
+        for only the provided lien statuses.
+      tags:
+        - attestationGroups
+      x-openapi-router-controller: 'pace.app.controllers.upsert_attestation_groups'
+      operationId: 'upsert_attestation_group_by_id'
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttestationGroupInput'
+      responses:
+        '200':
+          description: 'Updated the attestation group with the given ID.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttestationGroupDigest'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  '/api/v1/attestationGroups/{id}/revoke':
+    parameters:
+      - description: 'ID of the attestation group to revoke.'
+        in: 'path'
+        name: 'id'
+        required: true
+        schema:
+          $ref: '#/components/schemas/ApplicationId'
+    put:
+      summary: 'Revoke an existing attestation group'
+      description: >-
+        This endpoint allows Participants to revoke an attestation group. Does
+        nothing if the attestation group is already revoked.
+      tags:
+        - attestationGroups
+      x-openapi-router-controller: 'pace.app.controllers.revoke_attestation_groups'
+      operationId: 'revoke_attestation_group_by_id'
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttestationGroupsRevokeRequest'
+      responses:
+        '200':
+          description: 'All attestations in the attestation group were successfully revoked.'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/inquiries:
+    post:
+      summary: 'Purchase an inquiry on a Subject (a property)'
+      description: >-
+        Input identifying information for a property to purchase an inquiry
+        containing attestation groups reporting lien status data. For security,
+        nothing is automatically saved, so be sure to save the response!
+      tags:
+        - inquiries
+      x-openapi-router-controller: 'pace.app.controllers.create_inquiry'
+      operationId: 'create_inquiry'
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InquiriesRequest'
+      responses:
+        '201':
+          description: 'Inquiry created successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InquiriesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
